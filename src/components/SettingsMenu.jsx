@@ -7,8 +7,7 @@ export default function SettingsMenu() {
   const menuRef = useRef(null);
 
   const [theme, setTheme] = useState(() => {
-    return localStorage.getItem('theme') || 
-      (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+    return localStorage.getItem('theme') || 'light';
   });
 
   useEffect(() => {

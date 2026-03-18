@@ -41,10 +41,17 @@ export default function ExamPage() {
 
   // Guard: redirect to entry page if accessed without a name
   useEffect(() => {
-    if (!userName) {
+    if (!userName && status !== 'submitted') {
       navigate(`/exam/${examId}`, { replace: true });
     }
-  }, [userName, examId, navigate]);
+  }, [userName, examId, navigate, status]);
+
+  // Handle "Already Submitted" redirect
+  useEffect(() => {
+    if (status === 'submitted') {
+      navigate(`/exam/${examId}/submitted`, { replace: true });
+    }
+  }, [status, examId, navigate]);
 
   // Re-fetch data if missing (e.g. on direct navigation or refresh)
   useEffect(() => {
@@ -186,16 +193,18 @@ export default function ExamPage() {
       />
       
       <Header>
-        <div className="hidden md:block w-px h-6 bg-exam-border/40 mx-2" />
-        <div className="flex items-center justify-between flex-1 gap-4 min-w-0">
-          <div className="min-w-0">
-            <h1 className="text-sm font-bold text-exam-text truncate">{title}</h1>
-            <p className="text-xs text-exam-muted font-mono truncate hidden sm:block">
+        <div className="hidden lg:block w-px h-6 bg-exam-border/40 mx-2" />
+        <div className="flex items-center justify-between flex-1 gap-2 sm:gap-4 min-w-0">
+          <div className="min-w-0 flex flex-col">
+            <h1 className="text-[10px] sm:text-sm font-bold text-exam-text truncate max-w-[120px] sm:max-w-none">
+              {title}
+            </h1>
+            <p className="text-[9px] sm:text-xs text-exam-muted font-mono truncate hidden md:block">
               👤 {userName}
             </p>
           </div>
 
-          <div className="flex items-center gap-2 flex-wrap flex-shrink-0">
+          <div className="flex items-center gap-1.5 sm:gap-2 flex-shrink-0">
             {/* <IntegrityBadge /> */}
             <CountdownTimer endDate={endDate} />
           </div>

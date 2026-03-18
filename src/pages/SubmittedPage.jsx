@@ -13,6 +13,9 @@ export default function SubmittedPage() {
   const { userName, deviceFingerprint, submittedAt, examData, submissionResult, status, alreadySubmittedData } = useSelector((s) => s.exam);
   const dispatch = useDispatch();
 
+  // Fallback values for already submitted case
+  const displayFingerprint = deviceFingerprint || alreadySubmittedData?.deviceFingerprint || '';
+  
   // Guard: if accessed without a submission, go back to home
   useEffect(() => {
     if (status !== 'submitted' && !submissionResult) {
@@ -28,9 +31,10 @@ export default function SubmittedPage() {
 
   if (!submissionResult && status !== 'submitted') return null;
 
-  // Use real results from backend if available, otherwise fallback to placeholders
-  const finalScore = submissionResult?.score ?? 0;
-  const totalPoints = submissionResult?.totalPossibleScore ?? (examData?.questions?.reduce((s, q) => s + (q.score || 0), 0) ?? 0);
+  // Use real results from backend if available
+  const hasScore = !!submissionResult || (alreadySubmittedData && alreadySubmittedData.score !== undefined);
+  const finalScore = submissionResult?.score ?? alreadySubmittedData?.score ?? 0;
+  const totalPoints = submissionResult?.totalPossibleScore ?? alreadySubmittedData?.totalPossibleScore ?? (examData?.questions?.reduce((s, q) => s + (q.score || 0), 0) ?? 0);
   const scorePct = submissionResult?.percentage ? parseFloat(submissionResult.percentage) : (totalPoints > 0 ? Math.round((finalScore / totalPoints) * 100) : 0);
   
   const grade =
@@ -51,7 +55,7 @@ export default function SubmittedPage() {
     t('needsImprovement');
 
   const formatTs = (iso) => {
-    const raw = iso || submissionResult?.submittedAt || submittedAt;
+    const raw = iso || submissionResult?.submittedAt || submittedAt || alreadySubmittedData?.submittedAt;
     if (!raw) return '—';
     return new Date(raw).toLocaleString(i18n.language, {
       month: 'short', day: 'numeric', year: 'numeric',
@@ -78,48 +82,50 @@ export default function SubmittedPage() {
           </p>
         </div>
 
-        {/* Final Score Card */}
-        <div className="exam-card text-center">
-          <p className="text-[10px] sm:text-xs font-mono mb-4 text-exam-muted uppercase tracking-widest">
-            {t('finalScore')}
-            <span className="ms-2 px-1.5 py-0.5 rounded text-[10px] bg-exam-accent/10 text-exam-accent border border-exam-accent/20">
-              {submissionResult ? t('provisional') : 'PROVISIONAL'}
-            </span>
-          </p>
+        {/* Final Score Card - Only show if score is available */}
+        {hasScore && (
+          <div className="exam-card text-center">
+            <p className="text-[10px] sm:text-xs font-mono mb-4 text-exam-muted uppercase tracking-widest">
+              {t('finalScore')}
+              <span className="ms-2 px-1.5 py-0.5 rounded text-[10px] bg-exam-accent/10 text-exam-accent border border-exam-accent/20">
+                {submissionResult ? t('provisional') : 'PROVISIONAL'}
+              </span>
+            </p>
 
-          <div className="relative inline-flex items-center justify-center mb-4">
-            <svg width="100" height="100" viewBox="0 0 120 120" className="sm:w-[120px] sm:h-[120px]">
-              <circle cx="60" cy="60" r="52" fill="none" stroke="currentColor" className="text-exam-border" strokeWidth="10" />
-              <circle
-                cx="60" cy="60" r="52"
-                fill="none"
-                stroke={gradeColor}
-                strokeWidth="10"
-                strokeLinecap="round"
-                strokeDasharray={`${2 * Math.PI * 52}`}
-                strokeDashoffset={`${2 * Math.PI * 52 * (1 - scorePct / 100)}`}
-                transform="rotate(-90 60 60)"
-                style={{ transition: 'stroke-dashoffset 1s ease-out' }}
-              />
-            </svg>
-            <div className="absolute flex flex-col items-center">
-              <span className="text-2xl sm:text-3xl font-bold font-mono" style={{ color: gradeColor }}>{finalScore}</span>
-              <span className="text-[10px] sm:text-xs font-mono text-exam-muted">/ {totalPoints}</span>
+            <div className="relative inline-flex items-center justify-center mb-4">
+              <svg width="100" height="100" viewBox="0 0 120 120" className="sm:w-[120px] sm:h-[120px]">
+                <circle cx="60" cy="60" r="52" fill="none" stroke="currentColor" className="text-exam-border" strokeWidth="10" />
+                <circle
+                  cx="60" cy="60" r="52"
+                  fill="none"
+                  stroke={gradeColor}
+                  strokeWidth="10"
+                  strokeLinecap="round"
+                  strokeDasharray={`${2 * Math.PI * 52}`}
+                  strokeDashoffset={`${2 * Math.PI * 52 * (1 - scorePct / 100)}`}
+                  transform="rotate(-90 60 60)"
+                  style={{ transition: 'stroke-dashoffset 1s ease-out' }}
+                />
+              </svg>
+              <div className="absolute flex flex-col items-center">
+                <span className="text-2xl sm:text-3xl font-bold font-mono" style={{ color: gradeColor }}>{finalScore}</span>
+                <span className="text-[10px] sm:text-xs font-mono text-exam-muted">/ {totalPoints}</span>
+              </div>
             </div>
-          </div>
 
-          <div className="flex items-center justify-center gap-3">
-            <span className="text-3xl sm:text-4xl font-black font-mono" style={{ color: gradeColor }}>{grade}</span>
-            <div className="text-start">
-              <p className="text-base sm:text-lg font-bold text-exam-text">{scorePct}%</p>
-              <p className="text-[10px] sm:text-xs text-exam-muted">{gradeLabel}</p>
+            <div className="flex items-center justify-center gap-3">
+              <span className="text-3xl sm:text-4xl font-black font-mono" style={{ color: gradeColor }}>{grade}</span>
+              <div className="text-start">
+                <p className="text-base sm:text-lg font-bold text-exam-text">{scorePct}%</p>
+                <p className="text-[10px] sm:text-xs text-exam-muted">{gradeLabel}</p>
+              </div>
             </div>
-          </div>
 
-          <p className="text-xs font-mono mt-4 text-exam-muted italic opacity-70">
-            {t('officialResult')}
-          </p>
-        </div>
+            <p className="text-xs font-mono mt-4 text-exam-muted italic opacity-70">
+              {t('officialResult')}
+            </p>
+          </div>
+        )}
 
         {/* Submission Summary */}
         <div className="exam-card">
@@ -129,7 +135,7 @@ export default function SubmittedPage() {
           <div className="space-y-3">
             <div className="flex items-center justify-between py-2 border-b border-exam-border/40">
               <span className="text-exam-muted text-sm">{t('studentName')}</span>
-              <span className="text-exam-text font-semibold">{userName || '—'}</span>
+              <span className="text-exam-text font-semibold">{userName || alreadySubmittedData?.userName || '—'}</span>
             </div>
             <div className="flex items-center justify-between py-2 border-b border-exam-border/40">
               <span className="text-exam-muted text-sm">{t('exam')}</span>
@@ -137,7 +143,11 @@ export default function SubmittedPage() {
             </div>
             <div className="flex items-center justify-between py-2 border-b border-exam-border/40">
               <span className="text-exam-muted text-sm">{t('deviceFingerprint')}</span>
-              <span className="text-exam-accent font-mono text-sm">{shortFingerprint(deviceFingerprint)}</span>
+              <span className="text-exam-accent font-mono text-sm">{shortFingerprint(displayFingerprint)}</span>
+            </div>
+            <div className="flex items-center justify-between py-2 border-b border-exam-border/40">
+              <span className="text-exam-muted text-sm">{t('submissionId') || 'Submission ID'}</span>
+              <span className="text-exam-text font-mono text-xs">{alreadySubmittedData?.submissionId || '—'}</span>
             </div>
           </div>
         </div>
