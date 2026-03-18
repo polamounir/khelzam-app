@@ -62,7 +62,7 @@ export default function SettingsMenu() {
 
       {isOpen && (
         <div 
-          className="absolute end-0 z-50 mt-2 w-64 origin-top-end rounded-2xl bg-exam-surface/90 backdrop-blur-xl shadow-2xl ring-1 ring-exam-border focus:outline-none animate-slide-up border border-exam-border overflow-hidden" 
+          className="absolute end-0 z-50 mt-2 w-64 origin-top-end rounded-2xl bg-exam-surface backdrop-blur-xl shadow-2xl ring-1 ring-exam-border focus:outline-none animate-slide-up border border-exam-border overflow-hidden" 
           role="menu" 
           aria-orientation="vertical" 
           aria-labelledby="menu-button" 
