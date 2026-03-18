@@ -5,8 +5,8 @@ import SettingsMenu from './SettingsMenu';
 export default function Header({ children }) {
   return (
     <header className="fixed top-0 inset-x-0 z-[100] bg-exam-bg/95 backdrop-blur-md border-b border-exam-border/40">
-      <div className="px-6 py-4 flex items-center justify-between">
-        <div className="flex items-center gap-4 sm:gap-6 flex-1 min-w-0">
+      <div className="px-4 sm:px-6 py-3 sm:py-4 flex items-center justify-between">
+        <div className="flex items-center gap-3 sm:gap-6 flex-1 min-w-0">
           <Link 
             to="/" 
             className="flex items-center gap-2 group transition-transform hover:scale-105 active:scale-95 flex-shrink-0"

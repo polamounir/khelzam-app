@@ -69,26 +69,26 @@ export default function SubmittedPage() {
           <div className="w-16 h-16 rounded-2xl bg-emerald-500/20 border border-emerald-500/30 flex items-center justify-center text-3xl mx-auto mb-4">
             ✅
           </div>
-          <h1 className="text-2xl font-bold text-exam-text mb-1">
+          <h1 className="text-xl sm:text-2xl font-bold text-exam-text mb-1">
             {alreadySubmittedData?.message || t('examSubmitted')}
           </h1>
-          <p className="text-exam-muted text-sm">{t('responsesRecorded')}</p>
-          <p className="text-xs font-mono text-exam-muted mt-2 opacity-70">
+          <p className="text-exam-muted text-xs sm:text-sm">{t('responsesRecorded')}</p>
+          <p className="text-[10px] sm:text-xs font-mono text-exam-muted mt-2 opacity-70">
             {t('submittedAt', { time: formatTs() })}
           </p>
         </div>
 
         {/* Final Score Card */}
         <div className="exam-card text-center">
-          <p className="text-xs font-mono mb-4 text-exam-muted uppercase tracking-widest">
+          <p className="text-[10px] sm:text-xs font-mono mb-4 text-exam-muted uppercase tracking-widest">
             {t('finalScore')}
-            <span className="ms-2 px-1.5 py-0.5 rounded text-xs bg-exam-accent/10 text-exam-accent border border-exam-accent/20">
+            <span className="ms-2 px-1.5 py-0.5 rounded text-[10px] bg-exam-accent/10 text-exam-accent border border-exam-accent/20">
               {submissionResult ? t('provisional') : 'PROVISIONAL'}
             </span>
           </p>
 
           <div className="relative inline-flex items-center justify-center mb-4">
-            <svg width="120" height="120" viewBox="0 0 120 120">
+            <svg width="100" height="100" viewBox="0 0 120 120" className="sm:w-[120px] sm:h-[120px]">
               <circle cx="60" cy="60" r="52" fill="none" stroke="currentColor" className="text-exam-border" strokeWidth="10" />
               <circle
                 cx="60" cy="60" r="52"
@@ -103,16 +103,16 @@ export default function SubmittedPage() {
               />
             </svg>
             <div className="absolute flex flex-col items-center">
-              <span className="text-3xl font-bold font-mono" style={{ color: gradeColor }}>{finalScore}</span>
-              <span className="text-xs font-mono text-exam-muted">/ {totalPoints}</span>
+              <span className="text-2xl sm:text-3xl font-bold font-mono" style={{ color: gradeColor }}>{finalScore}</span>
+              <span className="text-[10px] sm:text-xs font-mono text-exam-muted">/ {totalPoints}</span>
             </div>
           </div>
 
           <div className="flex items-center justify-center gap-3">
-            <span className="text-4xl font-black font-mono" style={{ color: gradeColor }}>{grade}</span>
+            <span className="text-3xl sm:text-4xl font-black font-mono" style={{ color: gradeColor }}>{grade}</span>
             <div className="text-start">
-              <p className="text-lg font-bold text-exam-text">{scorePct}%</p>
-              <p className="text-xs text-exam-muted">{gradeLabel}</p>
+              <p className="text-base sm:text-lg font-bold text-exam-text">{scorePct}%</p>
+              <p className="text-[10px] sm:text-xs text-exam-muted">{gradeLabel}</p>
             </div>
           </div>
 

@@ -58,7 +58,7 @@ export default function QuestionRenderer({ question, index }) {
               {typeLabels[(type || 'mcq').toLowerCase()] || t('mcq')}
             </span>
             {/* The Question Prompt */}
-            <h3 className="text-xl font-bold text-exam-text leading-tight block">
+            <h3 className="text-lg sm:text-xl font-bold text-exam-text leading-tight block">
               {text || "--- Missing Question Text ---"}
             </h3>
             

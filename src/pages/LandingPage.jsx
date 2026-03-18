@@ -20,22 +20,22 @@ export default function LandingPage() {
           <div className="inline-block px-4 py-1.5 rounded-full bg-exam-accent/10 border border-exam-accent/20 text-exam-accent text-sm font-bold uppercase tracking-widest mb-4">
             {t('welcomeTo') || 'Welcome to'} Khelzam
           </div>
-          <h1 className="text-5xl font-black tracking-tight sm:text-7xl lg:text-8xl bg-clip-text text-transparent bg-gradient-to-br from-indigo-950 via-slate-800 to-slate-600 dark:from-white dark:via-slate-200 dark:to-slate-500">
+          <h1 className="text-4xl font-black tracking-tight sm:text-6xl lg:text-8xl bg-clip-text text-transparent bg-gradient-to-br from-indigo-950 via-slate-800 to-slate-600 dark:from-white dark:via-slate-200 dark:to-slate-500">
             {t('landingTitle') || 'Professional Exam Experience'}
           </h1>
-          <p className="text-exam-muted text-xl max-w-2xl mx-auto leading-relaxed">
-            {t('landingDesc') || 'A secure, high-integrity platform for modern educational assessments. Experience seamless testing with real-time monitoring and comprehensive review features.'}
+          <p className="text-exam-muted text-lg sm:text-xl max-w-2xl mx-auto leading-relaxed">
+            {t('landingDesc') || 'A professional platform for modern educational assessments. Experience seamless testing with intuitive interface and comprehensive review features.'}
           </p>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           <div className="exam-card border-exam-border/50 hover:border-exam-accent/50 transition-all duration-500 group">
             <div className="w-12 h-12 rounded-2xl bg-exam-accent/10 flex items-center justify-center text-2xl mb-4 group-hover:scale-110 transition-transform">
-              🔒
+              ✨
             </div>
-            <h3 className="text-xl font-bold text-exam-text mb-2">{t('secureTitle') || 'Secure'}</h3>
+            <h3 className="text-xl font-bold text-exam-text mb-2">{t('modernTitle') || 'Modern'}</h3>
             <p className="text-sm text-exam-muted leading-relaxed">
-              {t('secureDesc') || 'Advanced integrity monitoring and device fingerprinting to ensure fair testing.'}
+              {t('modernDesc') || 'A clean and fast interface designed for the best examination experience.'}
             </p>
           </div>
           <div className="exam-card border-exam-border/50 hover:border-exam-accent/50 transition-all duration-500 group">

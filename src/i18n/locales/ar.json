@@ -114,5 +114,18 @@
   "alreadySubmittedDesc": "تُظهر سجلاتنا أنك قد قمت مسبقاً بإنهاء وتسليم هذا الاختبار. لا يُسمح بإجراء الاختبار أكثر من مرة.",
   "backToHome": "العودة للرئيسية",
   "examId": "معرّف الاختبار",
-  "examIdPlaceholder": "أدخل معرّف الاختبار"
+  "examIdPlaceholder": "أدخل معرّف الاختبار",
+  "joinExam": "الانضمام للاختبار",
+  "alreadySubmitted": "تم الالتحاق بالاختبار سابقاً",
+  "readyToStart": "هل أنت مستعد للبدء؟",
+  "enterExamDetails": "أدخل معرّف الاختبار",
+  "viewMySubmission": "عرض اجاباتي",
+  "startNewExam": "بدء اختبار جديد",
+  "printResult": "طباعة النتيجة",
+  "notYou": " الاختبار/ الشخص اخر؟",
+  "submissionId": " معرّف التقديم",
+  "examSubmitted": "تم تسليم الاختبار بنجاح!"
+  
+  
+
 }

@@ -114,5 +114,15 @@
   "alreadySubmittedDesc": "Our records show that you have already completed and submitted this exam. Multiple submissions are not allowed.",
   "backToHome": "Back to Home",
   "examId": "Exam ID",
-  "examIdPlaceholder": "Enter Exam ID"
+  "examIdPlaceholder": "Enter Exam ID",
+  "joinExam": "Join Exam",
+  "alreadySubmitted": "You have already submitted this exam",
+  "readyToStart": "Are you ready to start?",
+  "enterExamDetails": "Exam Details",
+  "viewMySubmission": "View My Submission",
+  "startNewExam": "Start New Exam",
+  "printResult": "Print Result",
+  "notYou": "Another Person/Exam?",
+  "submissionId": "Submission ID"
+
 }

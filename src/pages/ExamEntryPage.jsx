@@ -112,13 +112,13 @@ export default function ExamEntryPage() {
       <div className="w-full max-w-md animate-fade-in z-10">
         <div className="exam-card border-exam-border/40 shadow-2xl bg-exam-surface/80 backdrop-blur-2xl">
           <div className="text-center mb-10">
-            <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-gradient-to-br from-exam-accent to-exam-accent-hover text-white text-3xl mb-6 shadow-xl shadow-exam-accent/20">
+            <div className="inline-flex items-center justify-center w-12 h-12 sm:w-16 sm:h-16 rounded-2xl bg-gradient-to-br from-exam-accent to-exam-accent-hover text-white text-2xl sm:text-3xl mb-4 sm:6 shadow-xl shadow-exam-accent/20">
               {examTitle ? '📝' : '🔍'}
             </div>
-            <h1 className="text-3xl font-black text-exam-text tracking-tight mb-2">
+            <h1 className="text-2xl sm:text-3xl font-black text-exam-text tracking-tight mb-2">
               {examTitle || t('joinExam') || 'Join Exam'}
             </h1>
-            <p className="text-exam-muted font-medium">
+            <p className="text-exam-muted text-sm font-medium">
               {examTitle 
                 ? (t('readyToStart') || 'Enter your name to begin the assessment.') 
                 : (t('enterExamDetails') || 'Provide the ID and your name to access the portal.')}
@@ -135,7 +135,7 @@ export default function ExamEntryPage() {
                   {t('alreadySubmitted') || 'Already Submitted'}
                 </h2>
                 <p className="text-exam-muted text-sm px-2">
-                  {alreadySubmittedData.message || 'You have already submitted this exam.'}
+                  {alreadySubmittedData.message ||   t('duplicateSubmission') }
                 </p>
                 <div className="pt-4 border-t border-exam-border/20">
                   <p className="text-xs font-black uppercase tracking-widest text-exam-muted mb-1">

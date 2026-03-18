@@ -12,7 +12,7 @@ import { submitExamAnswers } from '../api';
 import { clearExamState } from '../utils/localStorageHelpers';
 import Header from '../components/Header';
 import CountdownTimer from '../components/CountdownTimer';
-import IntegrityBadge from '../components/IntegrityBadge';
+// import IntegrityBadge from '../components/IntegrityBadge';
 import ProgressBar from '../components/ProgressBar';
 import QuestionRenderer from '../components/QuestionRenderer';
 import LoadingSpinner from '../components/ui/LoadingSpinner';
@@ -54,7 +54,7 @@ export default function ExamPage() {
   }, [dispatch, examData, examId, sliceError]);
 
   // Start integrity monitoring
-  useExamIntegrity(status === 'active');
+  // useExamIntegrity(status === 'active');
 
   const { isExpired } = useCountdownTimer(examData?.endDate);
 
@@ -84,12 +84,9 @@ export default function ExamPage() {
     const payload = {
       userName,
       deviceFingerprint,
-      tabExitCount: integrity.tabExitCount,
-      tabReturnCount: integrity.tabReturnCount,
-      integrityEvents: integrity.events.map(ev => ({
-        type: ev.type.replace('window_', ''), 
-        timestamp: ev.timestamp
-      })),
+      tabExitCount: 0,
+      tabReturnCount: 0,
+      integrityEvents: [],
       answers,
     };
 
@@ -106,7 +103,7 @@ export default function ExamPage() {
       
       navigate(`/exam/${examId}/submitted`, { replace: true });
       dispatch(addToast({ 
-        message: response.message || t('examSubmitted') || 'Exam submitted successfully!', 
+        message: response.message || t('examSubmitted') || '000 Exam submitted successfully!', 
         type: 'success' 
       }));
     } catch (err) {
@@ -199,7 +196,7 @@ export default function ExamPage() {
           </div>
 
           <div className="flex items-center gap-2 flex-wrap flex-shrink-0">
-            <IntegrityBadge />
+            {/* <IntegrityBadge /> */}
             <CountdownTimer endDate={endDate} />
           </div>
         </div>
