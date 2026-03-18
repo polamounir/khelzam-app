@@ -2,196 +2,251 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import { useTranslation } from 'react-i18next';
-import { fetchExamById, startExam } from '../store/examSlice';
+import { fetchExamById, startExam, resetExam } from '../store/examSlice';
 import { addToast } from '../store/uiSlice';
+import { resetIntegrity } from '../store/integritySlice';
 import { generateFingerprint } from '../utils/deviceFingerprint';
-import LanguageSwitcher from '../components/LanguageSwitcher';
+import Header from '../components/Header';
 
+/**
+ * ExamEntryPage - Refactored to focus solely on the entry form.
+ * Handles both /exam (dual input) and /exam/:examId (name only).
+ */
 export default function ExamEntryPage() {
   const { examId } = useParams();
   const navigate = useNavigate();
   const dispatch = useDispatch();
   const { t } = useTranslation();
 
-  const { examData, loading, error, userName: savedName } = useSelector((s) => s.exam);
+  const { examData, loading, error, userName: savedName, status, alreadySubmittedData } = useSelector((s) => s.exam);
   const [name, setName] = useState(savedName || '');
+  const [localExamId, setLocalExamId] = useState(examId || '');
   const [isStarting, setIsStarting] = useState(false);
 
-  useEffect(() => {
-    if (examId) {
-      dispatch(fetchExamById(examId));
-    }
-  }, [dispatch, examId]);
+  const handleReset = () => {
+    dispatch(resetExam());
+    dispatch(resetIntegrity());
+    setName('');
+    if (!examId) setLocalExamId('');
+  };
 
-  const handleStart = async () => {
-    if (!name.trim()) {
-      dispatch(addToast({ 
-        message: t('nameRequired') || 'Name is required', 
-        type: 'warning' 
-      }));
+  // Synchronize localExamId with URL param if it changes
+  useEffect(() => {
+    if (examId) setLocalExamId(examId);
+  }, [examId]);
+
+  // Auto-fetch exam details if ID is present
+  useEffect(() => {
+    const effectiveId = examId || localExamId;
+    if (effectiveId && effectiveId.length >= 8) {
+      dispatch(fetchExamById(effectiveId));
+    }
+  }, [dispatch, examId, localExamId]);
+
+  const handleStart = async (e) => {
+    if (e && e.preventDefault) e.preventDefault();
+    
+    // Field Validation
+    const trimmedName = name.trim();
+    if (!trimmedName) {
+      dispatch(addToast({ message: t('nameRequired') || 'Name is required', type: 'warning' }));
       return;
     }
-    if (name.trim().length < 2) {
-      dispatch(addToast({ 
-        message: t('nameTooShort') || 'Name is too short', 
-        type: 'warning' 
-      }));
+
+    const targetId = (examId || localExamId).trim();
+    if (!targetId) {
+      dispatch(addToast({ message: t('examIdRequired') || 'Exam ID is required', type: 'warning' }));
       return;
+    }
+
+    // Exam Availability Guards
+    if (examData) {
+      const now = new Date().getTime();
+      const isFuture = examData.startDate && new Date(examData.startDate).getTime() > now;
+      const isExpired = examData.endDate && new Date(examData.endDate).getTime() < now;
+
+      if (isExpired) {
+        dispatch(addToast({ message: t('examEnded') || 'This exam has already ended.', type: 'error' }));
+        return;
+      }
+      if (isFuture) {
+        dispatch(addToast({ message: t('examNotStarted') || 'This exam has not started yet.', type: 'warning' }));
+        return;
+      }
     }
 
     setIsStarting(true);
     const fingerprint = generateFingerprint();
     
+    // Store in Redux
     dispatch(startExam({ 
-      userName: name.trim(), 
+      userName: trimmedName, 
       deviceFingerprint: fingerprint 
     }));
     
-    navigate(`/exam/${examId}/active`);
+    // Navigate to Active Exam
+    navigate(`/exam/${targetId}/active`);
   };
 
-  if (loading) return (
-    <div className="min-h-screen flex items-center justify-center bg-exam-bg text-exam-text font-mono">
-      {t('loadingExam') || 'Loading exam...'}
-    </div>
-  );
-
-  // Robust check for examData structure
-  const hasData = examData && typeof examData === 'object' && !Array.isArray(examData) && examData.title;
-
-  if (error || !hasData) return (
-    <div className="min-h-screen flex flex-col items-center justify-center p-4 text-center bg-[#0a0e1a] text-[#e2e8f0]">
-      <div className="exam-card max-w-md w-full border-[#2d3a52] bg-[#1a2235] p-6 rounded-2xl shadow-2xl">
-        <h1 className="text-2xl font-bold text-red-500 mb-2">{t('examNotFound') || 'Exam Not Found'}</h1>
-        <p className="text-slate-400 mb-4">{t('examNotFoundDesc', { examId }) || `The exam ID "${examId}" does not exist or failed to load.`}</p>
-        <button onClick={() => navigate('/')} className="exam-btn-secondary w-full border-[#2d3a52] text-[#e2e8f0] hover:bg-[#111827]">
-          {t('goBack') || 'Go Back'}
-        </button>
-      </div>
-    </div>
-  );
-
-  const { title, description, questions = [], startDate, endDate } = examData;
-  const totalQuestions = Array.isArray(questions) ? questions.length : 0;
-  const totalScore = Array.isArray(questions) ? questions.reduce((sum, q) => sum + (q.score || 0), 0) : 0;
+  const hasError = !!error;
+  const examTitle = examData?.title || '';
+  
+  // Dynamic Button State
+  const isPending = isStarting || (loading && !!(examId || localExamId));
+  const isExpired = hasError && error?.toLowerCase().includes('ended');
+  
+  const getButtonText = () => {
+    if (isPending) return t('loading') || 'Processing...';
+    if (isExpired) return t('examEnded');
+    return t('startExam');
+  };
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center p-4 py-12 bg-exam-bg">
-      <div className="absolute top-4 right-4 ltr:right-4 rtl:left-4">
-        <LanguageSwitcher />
-      </div>
+    <>
+      <Header />
+      <div className="min-h-[calc(100vh-80px)] flex flex-col items-center justify-center p-4 bg-exam-bg transition-colors duration-500 overflow-hidden relative pt-20">
+      {/* Decorative background elements */}
+      <div className="absolute top-[-10%] start-[-5%] w-[40%] h-[40%] bg-exam-accent/10 rounded-full blur-[100px] pointer-events-none" />
+      <div className="absolute bottom-[-10%] end-[-5%] w-[40%] h-[40%] bg-blue-500/10 rounded-full blur-[100px] pointer-events-none" />
 
-      <div className="w-full max-w-2xl space-y-6 animate-fade-in">
-        <div className="text-center space-y-2">
-          <div className="inline-block px-3 py-1 rounded-full bg-exam-accent/10 border border-exam-accent/20 text-exam-accent text-xs font-bold uppercase tracking-wider mb-2">
-            {t('exam')}
-          </div>
-          <h1 className="text-3xl font-extrabold text-exam-text tracking-tight sm:text-4xl">
-            {title}
-          </h1>
-          
-          {examData.image && (
-            <div className="relative w-full max-w-lg mx-auto aspect-video rounded-2xl overflow-hidden border border-exam-border shadow-2xl shadow-black/40 bg-exam-surface group">
-              <img 
-                src={examData.image} 
-                alt={title}
-                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
-                onError={(e) => e.target.style.display = 'none'}
-              />
-              <div className="absolute inset-0 bg-gradient-to-t from-exam-bg/80 to-transparent opacity-60" />
+      <div className="w-full max-w-md animate-fade-in z-10">
+        <div className="exam-card border-exam-border/40 shadow-2xl bg-exam-surface/80 backdrop-blur-2xl">
+          <div className="text-center mb-10">
+            <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-gradient-to-br from-exam-accent to-exam-accent-hover text-white text-3xl mb-6 shadow-xl shadow-exam-accent/20">
+              {examTitle ? '📝' : '🔍'}
             </div>
+            <h1 className="text-3xl font-black text-exam-text tracking-tight mb-2">
+              {examTitle || t('joinExam') || 'Join Exam'}
+            </h1>
+            <p className="text-exam-muted font-medium">
+              {examTitle 
+                ? (t('readyToStart') || 'Enter your name to begin the assessment.') 
+                : (t('enterExamDetails') || 'Provide the ID and your name to access the portal.')}
+            </p>
+          </div>
+
+          {status === 'submitted' && alreadySubmittedData ? (
+            <div className="space-y-6 text-center animate-fade-in">
+              <div className="p-6 rounded-2xl bg-blue-500/10 border border-blue-500/20 space-y-4">
+                <div className="w-20 h-20 mx-auto rounded-full bg-blue-500/20 flex items-center justify-center text-4xl shadow-inner">
+                  ✅
+                </div>
+                <h2 className="text-xl font-bold text-exam-text">
+                  {t('alreadySubmitted') || 'Already Submitted'}
+                </h2>
+                <p className="text-exam-muted text-sm px-2">
+                  {alreadySubmittedData.message || 'You have already submitted this exam.'}
+                </p>
+                <div className="pt-4 border-t border-exam-border/20">
+                  <p className="text-xs font-black uppercase tracking-widest text-exam-muted mb-1">
+                    {t('submissionId') || 'Submission ID'}
+                  </p>
+                  <code className="text-exam-accent font-mono text-sm">
+                    {alreadySubmittedData.submissionId}
+                  </code>
+                </div>
+              </div>
+
+              <button
+                onClick={() => navigate(`/results/${alreadySubmittedData.submissionId}`)}
+                className="exam-btn-primary w-full py-4 text-lg font-black tracking-widest uppercase transition-all duration-300 hover:scale-[1.02] active:scale-[0.98] shadow-xl shadow-exam-accent/30 flex items-center justify-center gap-3"
+              >
+                📊 {t('viewMySubmission') || 'View My Submission'}
+              </button>
+              
+              <button
+                onClick={handleReset}
+                className="text-exam-muted text-xs font-bold uppercase tracking-widest hover:text-exam-text transition-colors duration-200 mt-4"
+              >
+                {t('notYou') || 'Not you? Reset'}
+              </button>
+            </div>
+          ) : (
+            <form onSubmit={handleStart} className="space-y-6">
+              {/* Reset button if some data exists but not submitted */}
+              {(name || (localExamId && !examId)) && (
+                <div className="flex justify-end">
+                  <button 
+                    type="button"
+                    onClick={handleReset}
+                    className="text-[10px] font-black uppercase tracking-widest text-exam-muted hover:text-exam-accent transition-colors"
+                  >
+                    {t('clearForm') || 'Clear Form'}
+                  </button>
+                </div>
+              )}
+              {/* Exam ID Input - only show if not in URL */}
+              {!examId && (
+                <div className="space-y-2">
+                  <label htmlFor="exam-id" className="block text-sm font-bold text-exam-text px-1">
+                    {t('examId')}
+                  </label>
+                  <div className="relative group">
+                    <span className="absolute inset-y-0 left-4 rtl:left-auto rtl:right-4 flex items-center text-exam-muted group-focus-within:text-exam-accent transition-colors duration-200">
+                      🔑
+                    </span>
+                    <input
+                      id="exam-id"
+                      type="text"
+                      className="exam-input ltr:pl-11 rtl:pl-4 rtl:pr-11 ltr:pr-4 py-4 "
+                      placeholder={t('examIdPlaceholder') || 'Enter ID...'}
+                      value={localExamId}
+                      onChange={(e) => setLocalExamId(e.target.value)}
+                      autoComplete="off"
+                      disabled={isPending}
+                    />
+                  </div>
+                </div>
+              )}
+
+              {/* Student Name Input */}
+              <div className="space-y-2">
+                <label htmlFor="student-name" className="block text-sm font-bold text-exam-text px-1">
+                  {t('yourFullName')}
+                </label>
+                <div className="relative group">
+                  <span className="absolute inset-y-0 left-4 rtl:left-auto rtl:right-4 flex items-center text-exam-muted group-focus-within:text-exam-accent transition-colors duration-200">
+                    👤
+                  </span>
+                  <input
+                    id="student-name"
+                    type="text"
+                    className="exam-input ltr:pl-11 rtl:pl-4 rtl:pr-11 ltr:pr-4 py-4"
+                    placeholder={t('namePlaceholder')}
+                    value={name}
+                    onChange={(e) => setName(e.target.value)}
+                    autoComplete="name"
+                    disabled={isStarting}
+                  />
+                </div>
+              </div>
+
+              {/* Inline Error Messenger */}
+              {hasError && (
+                <div className="p-4 rounded-2xl bg-red-500/10 border border-red-500/20 flex items-start gap-4 animate-slide-up">
+                  <span className="text-xl">⚠️</span>
+                  <p className="text-sm font-bold text-red-500 leading-tight py-1">
+                    {isExpired ? t('examEnded') : error}
+                  </p>
+                </div>
+              )}
+
+              <button
+                type="submit"
+                disabled={isPending || isExpired}
+                className="exam-btn-primary w-full py-4 text-lg font-black tracking-widest uppercase transition-all duration-300 hover:scale-[1.02] active:scale-[0.98] shadow-xl shadow-exam-accent/30"
+              >
+                {getButtonText()}
+              </button>
+            </form>
           )}
-
-          <p className="text-exam-muted text-lg max-w-lg mx-auto leading-relaxed">
-            {description}
-          </p>
         </div>
 
-        <div className="grid grid-cols-2 gap-4">
-          <div className="exam-card flex items-center gap-4 py-4">
-            <div className="w-12 h-12 rounded-xl bg-exam-surface flex items-center justify-center text-xl border border-exam-border">
-              📝
-            </div>
-            <div>
-              <p className="text-xl font-bold text-exam-text">{totalQuestions}</p>
-              <p className="text-xs text-exam-muted uppercase font-semibold">{t('questions')}</p>
-            </div>
-          </div>
-          <div className="exam-card flex items-center gap-4 py-4">
-            <div className="w-12 h-12 rounded-xl bg-exam-surface flex items-center justify-center text-xl border border-exam-border">
-              🔟
-            </div>
-            <div>
-              <p className="text-xl font-bold text-exam-text">{totalScore}</p>
-              <p className="text-xs text-exam-muted uppercase font-semibold">{t('totalPts')}</p>
-            </div>
-          </div>
-        </div>
-
-        <div className="exam-card space-y-6">
-          <div className="space-y-4">
-            <div className="flex items-center gap-2 mb-2">
-              <span className="text-exam-accent text-lg">🗓️</span>
-              <h2 className="font-bold text-exam-text">{t('examWindow')}</h2>
-            </div>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div className="p-3 rounded-lg bg-exam-surface border border-exam-border">
-                <p className="text-[10px] text-exam-muted uppercase font-bold mb-1">{t('opens')}</p>
-                <p className="text-sm font-mono text-exam-text">
-                  {startDate ? new Date(startDate).toLocaleString() : '—'}
-                </p>
-              </div>
-              <div className="p-3 rounded-lg bg-exam-surface border border-exam-border">
-                <p className="text-[10px] text-exam-muted uppercase font-bold mb-1">{t('closes')}</p>
-                <p className="text-sm font-mono text-exam-text">
-                  {endDate ? new Date(endDate).toLocaleString() : '—'}
-                </p>
-              </div>
-            </div>
-          </div>
-
-          <div className="p-4 rounded-xl bg-amber-500/10 border border-amber-500/20">
-            <div className="flex gap-3">
-              <span className="text-2xl pt-0.5">⚠️</span>
-              <div>
-                <p className="font-bold text-amber-400 text-sm mb-1">{t('integrityTitle')}</p>
-                <p className="text-xs text-amber-200/70 leading-relaxed">
-                  {t('integrityDesc')}
-                </p>
-              </div>
-            </div>
-          </div>
-
-          <div className="space-y-4 pt-2">
-            <div>
-              <label htmlFor="student-name" className="block text-sm font-bold text-exam-text mb-2">
-                {t('yourFullName')}
-              </label>
-              <input
-                id="student-name"
-                type="text"
-                className="exam-input"
-                placeholder={t('namePlaceholder')}
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                disabled={isStarting}
-              />
-            </div>
-
-            <button
-              onClick={handleStart}
-              disabled={isStarting || !name.trim()}
-              className="exam-btn-primary w-full py-4 text-lg"
-            >
-              {isStarting ? t('starting') : t('startExam')}
-            </button>
-          </div>
-        </div>
-
-        <p className="text-center text-xs text-exam-muted font-mono">
-          {t('idLabel', { id: examId })}
-        </p>
+        <footer className="mt-12 text-center text-[10px] text-exam-muted font-black uppercase tracking-[0.4em] opacity-40">
+          &copy; 2026 John Mounir &bull; Khelzam Examination Gateway
+        </footer>
       </div>
     </div>
+    </>
   );
 }

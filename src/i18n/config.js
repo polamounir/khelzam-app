@@ -13,7 +13,7 @@ i18n
       en: { translation: en },
       ar: { translation: ar },
     },
-    fallbackLng: 'en',
+    fallbackLng: 'ar',
     interpolation: {
       escapeValue: false,
     },
@@ -25,12 +25,13 @@ i18n
 
 // Handle RTL/LTR document direction
 i18n.on('languageChanged', (lng) => {
-  document.dir = lng === 'ar' ? 'rtl' : 'ltr';
+  document.documentElement.dir = lng.startsWith('ar') ? 'rtl' : 'ltr';
   document.documentElement.lang = lng;
 });
 
 // Initialize direction on load
-document.dir = i18n.language === 'ar' ? 'rtl' : 'ltr';
-document.documentElement.lang = i18n.language || 'ar';
+const currentLng = i18n.language || 'ar';
+document.documentElement.dir = currentLng.startsWith('ar') ? 'rtl' : 'ltr';
+document.documentElement.lang = currentLng;
 
 export default i18n;

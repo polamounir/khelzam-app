@@ -1,25 +1,25 @@
-/** @type {import('tailwindcss').Config} */
 export default {
   content: [
     "./index.html",
     "./src/**/*.{js,ts,jsx,tsx}",
   ],
+  darkMode: 'class',
   theme: {
     extend: {
       colors: {
         exam: {
-          bg: '#0a0e1a',
-          surface: '#111827',
-          card: '#1a2235',
-          border: '#2d3a52',
-          accent: '#6366f1',
-          'accent-hover': '#818cf8',
-          'accent-light': '#312e81',
-          success: '#10b981',
-          warning: '#f59e0b',
-          danger: '#ef4444',
-          text: '#e2e8f0',
-          muted: '#94a3b8',
+          bg: 'var(--exam-bg)',
+          surface: 'var(--exam-surface)',
+          card: 'var(--exam-card)',
+          border: 'var(--exam-border)',
+          accent: 'var(--exam-accent)',
+          'accent-hover': 'var(--exam-accent-hover)',
+          'accent-light': 'var(--exam-accent-light)',
+          success: 'var(--exam-success)',
+          warning: 'var(--exam-warning)',
+          danger: 'var(--exam-danger)',
+          text: 'var(--exam-text)',
+          muted: 'var(--exam-muted)',
         },
       },
       fontFamily: {
@@ -29,4 +29,5 @@ export default {
     },
   },
   plugins: [],
+  // Trigger rebuild for Header and Light Mode CSS
 }

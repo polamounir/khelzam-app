@@ -1,18 +1,22 @@
 import React from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { useTranslation } from 'react-i18next';
-import { setAnswer } from '../store/examSlice';
+import { setAnswer, toggleFlag } from '../store/examSlice';
+import { useState } from 'react';
 
 export default function QuestionRenderer({ question, index }) {
   const { t } = useTranslation();
   const dispatch = useDispatch();
+  const [imageError, setImageError] = useState(false);
   const answers = useSelector((s) => s.exam.answers);
+  const flaggedQuestions = useSelector((s) => s.exam.flaggedQuestions);
   
   // Safety check
   if (!question) return null;
 
   const { id, type, text, options, score } = question;
   const currentAnswer = answers[id];
+  const isFlagged = flaggedQuestions.includes(id);
 
   
   const typeLabels = {
@@ -58,22 +62,30 @@ export default function QuestionRenderer({ question, index }) {
               {text || "--- Missing Question Text ---"}
             </h3>
             
-            {question.image && (
+            {question.image && !imageError && (
               <div className="mt-4 overflow-hidden rounded-xl border border-exam-border bg-black/20">
                 <img 
                   src={question.image} 
                   alt={t('questionAlt', { num: index + 1 })}
                   className="w-full h-auto object-cover max-h-[400px] hover:scale-[1.02] transition-transform duration-500"
-                  onError={(e) => {
-                    e.target.style.display = 'none';
-                    console.error('Failed to load question image:', question.image);
-                  }}
+                  onError={() => setImageError(true)}
                 />
               </div>
             )}
           </div>
         </div>
-        <div className="flex-shrink-0">
+        <div className="flex flex-col items-end gap-2 flex-shrink-0">
+          <button 
+            onClick={() => dispatch(toggleFlag(id))}
+            className={`p-2 rounded-lg border transition-all ${
+              isFlagged 
+                ? 'bg-amber-500/20 border-amber-500/40 text-amber-500' 
+                : 'bg-exam-surface border-exam-border text-exam-muted hover:text-exam-text'
+            }`}
+            title={t('flagQuestion') || 'Flag for review'}
+          >
+            {isFlagged ? '🚩' : '🏳️'}
+          </button>
           <span className="px-2 py-1 rounded-md bg-exam-surface border border-exam-border text-[10px] font-bold text-exam-muted uppercase">
             {t(score === 1 ? 'pts' : 'ptsPlural', { count: score })}
           </span>

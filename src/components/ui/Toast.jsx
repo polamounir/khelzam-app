@@ -38,10 +38,10 @@ function ToastItem({ toast }) {
       className={`flex items-center gap-3 p-4 min-w-[300px] max-w-md rounded-2xl border backdrop-blur-md shadow-2xl ${bgs[toast.type] || bgs.info}`}
     >
       <div className="flex-shrink-0">{icons[toast.type] || icons.info}</div>
-      <p className="flex-1 text-sm font-medium text-slate-200">{toast.message}</p>
+      <p className="flex-1 text-sm font-medium text-exam-text">{toast.message}</p>
       <button
         onClick={() => dispatch(removeToast(toast.id))}
-        className="text-slate-500 hover:text-slate-300 transition-colors"
+        className="text-exam-muted hover:text-exam-text transition-colors"
       >
         <X className="w-4 h-4" />
       </button>
@@ -53,7 +53,7 @@ export default function ToastContainer() {
   const toasts = useSelector((s) => s.ui.toasts);
 
   return (
-    <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-[9999] flex flex-col gap-3">
+    <div className="fixed bottom-6 inset-x-0 z-[9999] flex flex-col items-center gap-3">
       <AnimatePresence mode="popLayout">
         {toasts.map((t) => (
           <ToastItem key={t.id} toast={t} />

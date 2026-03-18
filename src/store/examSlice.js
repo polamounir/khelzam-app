@@ -9,7 +9,8 @@ export const fetchExamById = createAsyncThunk(
       const data = await apiFetchExamById(examId);
       return data;
     } catch (err) {
-      return rejectWithValue(err.message);
+      // Pass the whole data object if it exists (for specific error handling) or the message
+      return rejectWithValue(err.data || { message: err.message });
     }
   }
 );
@@ -23,7 +24,10 @@ const initialState = {
   submittedAt: null,
   submissionResult: null, // { score, totalPossibleScore, percentage, submittedAt }
   loading: false,
-  error: null,
+  flaggedQuestions: [], // Array of question IDs
+  reviewMode: false,
+  submissionId: null,    // ID of existing submission if already submitted
+  alreadySubmittedData: null, // Full data from "already submitted" response
 };
 
 const examSlice = createSlice({
@@ -44,18 +48,33 @@ const examSlice = createSlice({
       state.status = 'expired';
       state.submittedAt = new Date().toISOString();
       if (action.payload) {
-        state.submissionResult = action.payload;
+        state.submissionResult = action.payload.result || action.payload;
+        state.submissionId = action.payload.submissionId || state.submissionId;
+        state.alreadySubmittedData = action.payload; // Store full response for reference
       }
     },
     submitExam(state, action) {
       state.status = 'submitted';
       state.submittedAt = new Date().toISOString();
       if (action.payload) {
-        state.submissionResult = action.payload;
+        state.submissionResult = action.payload.result || action.payload;
+        state.submissionId = action.payload.submissionId || state.submissionId;
+        state.alreadySubmittedData = action.payload; // Store full response for reference
       }
     },
     setSubmitting(state) {
       state.status = 'submitting';
+    },
+    toggleFlag(state, action) {
+      const questionId = action.payload;
+      if (state.flaggedQuestions.includes(questionId)) {
+        state.flaggedQuestions = state.flaggedQuestions.filter(id => id !== questionId);
+      } else {
+        state.flaggedQuestions.push(questionId);
+      }
+    },
+    setReviewMode(state, action) {
+      state.reviewMode = action.payload;
     },
     resetExam() {
       return initialState;
@@ -73,7 +92,25 @@ const examSlice = createSlice({
       })
       .addCase(fetchExamById.rejected, (state, action) => {
         state.loading = false;
-        state.error = action.payload;
+        const payload = action.payload;
+        
+        // Handle "Already Submitted" case
+        if (payload?.message === "You have already submitted this exam." && payload.data) {
+          state.status = 'submitted';
+          state.examData = {
+            _id: payload.data.examId,
+            title: payload.data.examTitle,
+            description: payload.data.examDescription,
+            image: payload.data.examImage,
+            startDate: payload.data.examStartDate,
+            endDate: payload.data.examEndDate,
+          };
+          state.submissionId = payload.data.submissionId;
+          state.alreadySubmittedData = payload.data;
+          state.error = null;
+        } else {
+          state.error = typeof payload === 'string' ? payload : payload?.message || 'Failed to fetch exam';
+        }
       });
   },
 });
@@ -84,6 +121,8 @@ export const {
   expireExam,
   submitExam,
   setSubmitting,
+  toggleFlag,
+  setReviewMode,
   resetExam,
 } = examSlice.actions;
 

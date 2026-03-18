@@ -43,22 +43,22 @@ export default function Modal({
             initial={{ opacity: 0, scale: 0.9, y: 20 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.9, y: 20 }}
-            className="relative w-full max-w-md bg-[#111827] border border-slate-800 rounded-3xl overflow-hidden shadow-2xl"
+            className="relative w-full max-w-md bg-exam-surface border border-exam-border rounded-3xl overflow-hidden shadow-2xl"
           >
             <div className="p-8 text-center">
               <div className="flex justify-center mb-6">
-                <div className="w-16 h-16 rounded-2xl bg-slate-900 border border-slate-800 flex items-center justify-center shadow-inner">
+                <div className="w-16 h-16 rounded-2xl bg-exam-card border border-exam-border flex items-center justify-center shadow-inner">
                   {iconMap[type]}
                 </div>
               </div>
               
-              <h2 className="text-2xl font-bold text-white mb-3">{title}</h2>
-              <p className="text-slate-400 leading-relaxed mb-8">{message}</p>
+              <h2 className="text-2xl font-bold text-exam-text mb-3">{title}</h2>
+              <p className="text-exam-muted leading-relaxed mb-8">{message}</p>
               
               <div className="flex flex-col sm:flex-row gap-3">
                 <button
                   onClick={onClose}
-                  className="flex-1 px-6 py-3 rounded-xl border border-slate-800 text-slate-300 font-semibold hover:bg-slate-900 transition-all"
+                  className="flex-1 px-6 py-3 rounded-xl border border-exam-border text-exam-text font-semibold hover:bg-exam-card transition-all"
                 >
                   {cancelText}
                 </button>
@@ -73,7 +73,7 @@ export default function Modal({
             
             <button
               onClick={onClose}
-              className="absolute top-4 right-4 p-2 text-slate-500 hover:text-white transition-colors"
+              className="absolute top-4 end-4 p-2 text-exam-muted hover:text-exam-text transition-colors"
             >
               <X className="w-5 h-5" />
             </button>

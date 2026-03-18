@@ -26,7 +26,8 @@ export function useCountdownTimer(endDate) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [endDate]);
 
-  const hours = Math.floor(totalSeconds / 3600);
+  const days = Math.floor(totalSeconds / 86400);
+  const hours = Math.floor((totalSeconds % 86400) / 3600);
   const minutes = Math.floor((totalSeconds % 3600) / 60);
   const seconds = totalSeconds % 60;
   const isExpired = totalSeconds === 0;
@@ -36,9 +37,12 @@ export function useCountdownTimer(endDate) {
   const isDanger = totalSeconds > 0 && totalSeconds <= 60;   // < 1 min
 
   const pad = (n) => String(n).padStart(2, '0');
-  const formattedTime = `${pad(hours)}:${pad(minutes)}:${pad(seconds)}`;
+  const formattedTime = days > 0 
+    ? `${pad(days)}:${pad(hours)}:${pad(minutes)}:${pad(seconds)}`
+    : `${pad(hours)}:${pad(minutes)}:${pad(seconds)}`;
 
   return { 
+    days,
     hours, 
     minutes, 
     seconds, 

@@ -12,11 +12,10 @@ export default function ProgressBar({ answered, total }) {
         <span>{answered} / {total}</span>
       </div>
       <div className="h-1.5 w-full bg-exam-surface rounded-full overflow-hidden border border-exam-border">
-        <div 
-          className="h-full bg-gradient-to-r from-exam-accent to-indigo-400 transition-all duration-500 ease-out"
+        <div
+          className="h-full bg-gradient-to-r rtl:bg-gradient-to-l from-exam-accent to-indigo-400 transition-all duration-500 ease-out"
           style={{ width: `${pct}%` }}
-        />
-      </div>
+        />      </div>
     </div>
   );
 }
