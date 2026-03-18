@@ -23,5 +23,6 @@ export default function NotFoundPage() {
         {t('goBack')}
       </button>
     </div>
+    </>
   );
 }
